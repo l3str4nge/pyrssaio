@@ -5,7 +5,7 @@ import aiohttp
 from lxml import etree
 from typing import List, Tuple, Set
 
-from pyrss.models import Article
+from pyrssaio.models import Article
 
 
 FutureResults = Tuple[Set[Future], Set[Future]]
