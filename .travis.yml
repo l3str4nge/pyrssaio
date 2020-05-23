@@ -1,0 +1,12 @@
+language: python
+python:
+  - "3.8"
+
+install:
+  - pip install -r requirements.txt
+
+script:
+  - pytest --cov=pyrss --cov=tests --cov=docs/src --cov-report=term-missing tests
+
+after_script:
+  - bash <(curl -s https://codecov.io/bash)
