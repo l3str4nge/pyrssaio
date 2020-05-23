@@ -1,15 +1,14 @@
 import asyncio
+from asyncio import Future
+
 import aiohttp
-from dataclasses import dataclass
 from lxml import etree
-from typing import List
+from typing import List, Tuple, Set
+
+from pyrss.models import Article
 
 
-@dataclass
-class Article:
-    title: str
-    description: str
-    date: str
+FutureResults = Tuple[Set[Future], Set[Future]]
 
 
 async def fetch_content(url: str, session: aiohttp.ClientSession, **kwargs) -> str:
@@ -42,22 +41,27 @@ async def xml2obj(xml: etree) -> List[Article]:
     return elements
 
 
-async def main():
-    urls = [
-        "https://www.yahoo.com/news/rss/world",
-        "https://hnrss.org/newest",
-        "https://www.yahoo.com/news/rss/sports"
-    ]
+async def main(urls: List[str]) -> FutureResults:
     async with aiohttp.ClientSession() as session:
         return await asyncio.wait([parse_content(url, session) for url in urls])
 
 
-if __name__ == '__main__':
+def consume(urls: List[str]) -> FutureResults:
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(asyncio.gather(main()))
+    result = loop.run_until_complete(asyncio.gather(main(urls)))
     loop.close()
 
     for item in result[0][0]:
+        yield from item.result()
+
+
+if __name__ == '__main__':
+
+    _urls = [
+        "https://www.yahoo.com/news/rss/world",
+        "https://hnrss.org/newest",
+        "https://www.yahoo.com/news/rss/sports"
+    ]
+    content = consume(_urls)
+    for item in content:
         print(item)
-        for x in item.result():
-            print(x)
