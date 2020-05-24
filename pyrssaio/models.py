@@ -1,8 +1,5 @@
-from dataclasses import dataclass
-
-
-@dataclass
 class Article:
-    title: str
-    description: str
-    date: str
+    def __init__(self, item):
+        self.title: str = item.find("title")
+        self.description: str = item.find("description")
+        self.date: str = item.find("pubDate")

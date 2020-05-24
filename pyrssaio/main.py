@@ -30,17 +30,9 @@ async def parse_content(url: str, session: aiohttp.ClientSession, **kwargs) -> L
 
 
 async def xml2obj(xml: etree) -> List[Article]:
-    elements = []
-    for item in xml.iter('item'):
-        elements.append(Article(
-            item.find("title"),
-            item.find("description"),
-            item.find("pubDate")
-        ))
+    return [Article(item) for item in xml.iter('item')]
 
-    return elements
-
-
+    
 async def main(urls: List[str]) -> FutureResults:
     async with aiohttp.ClientSession() as session:
         return await asyncio.wait([parse_content(url, session) for url in urls])
