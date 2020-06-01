@@ -1,11 +1,14 @@
 import asyncio
 from asyncio import Future
 
+import sys
+
 import aiohttp
 from lxml import etree
 from typing import List, Tuple, Set
 
 from pyrssaio.models import Article
+from pyrssaio.utils import register_model
 
 
 FutureResults = Tuple[Set[Future], Set[Future]]
@@ -30,9 +33,9 @@ async def parse_content(url: str, session: aiohttp.ClientSession, **kwargs) -> L
 
 
 async def xml2obj(xml: etree) -> List[Article]:
-    return [Article(item) for item in xml.iter('item')]
+    return [sys.modules['pyrssaio.models'].Article(item) for item in xml.iter('item')]
 
-    
+
 async def main(urls: List[str]) -> FutureResults:
     async with aiohttp.ClientSession() as session:
         return await asyncio.wait([parse_content(url, session) for url in urls])
@@ -48,7 +51,15 @@ def consume(urls: List[str]) -> FutureResults:
 
 
 if __name__ == '__main__':
+    class TestArticle(Article):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.test()
 
+        def test(self):
+            print("TEST")
+            
+    register_model(TestArticle)
     _urls = [
         "https://www.yahoo.com/news/rss/world",
         "https://hnrss.org/newest",
@@ -56,4 +67,4 @@ if __name__ == '__main__':
     ]
     content = consume(_urls)
     for item in content:
-        print(item)
+        print(item.test())
